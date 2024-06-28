@@ -1,0 +1,88 @@
+# docker compose for postgresql db, which is used to store our scraped data
+
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16.1-alpine3.18
+    container_name: collector
+    environment:
+      POSTGRES_DB: "ingredients"
+      POSTGRES_USER: "collector"
+      POSTGRES_PASSWORD: "c011lect"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U collector -d ingredients" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    networks:
+      - app
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:7.2
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "kamasalyamov@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "c011lect"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    links:
+      - postgres
+    networks:
+      - app
+
+  backend:
+    build: ./backend
+    container_name: backend
+    volumes:
+      - backend-data:/var/lib/backend
+    ports:
+      - "8080:8080"
+    links:
+      - postgres
+    networks:
+      - app
+
+  frontend:
+    build: ./frontend/predlog
+    container_name: frontend
+    volumes:
+      - frontend-data:/var/lib/frontend
+    ports:
+      - "3000:3000"
+    links:
+      - backend
+    networks:
+      - app
+
+
+volumes:
+  db-data:
+  pgadmin-data:
+  backend-data:
+  frontend-data:
+
+networks:
+  app:
+    driver: bridge

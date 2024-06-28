@@ -1,0 +1,29 @@
+.card {
+  /* width: 33%; */
+  /* float: left; */
+  padding: 5px;
+  border-width:1px;
+  border-style:solid;
+  background-color: blanchedalmond;
+  border-color:grey;
+}
+
+img {
+  width: 150px;
+  height: 150px;
+}
+
+p, h2 {
+  text-align: justify;
+  font-size: 15px;
+}
+
+span {
+  color: darkseagreen;
+}
+
+span:hover {
+  color:darkgreen;
+}
+
+
